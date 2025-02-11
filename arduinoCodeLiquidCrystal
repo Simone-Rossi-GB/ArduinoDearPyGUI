@@ -8,7 +8,7 @@
 #define LED_ROSSO 4
 
 DHT11 dht11(DHT_PIN);
-LiquidCrystal_I2C lcd(0x27, 16, 2); // Modifica l'indirizzo I2C se necessario
+LiquidCrystal_I2C lcd(0x27, 16, 2); //i pin A4 e A5 li ha all'interno ain automatico
 
 // Soglie temperatura
 const int TEMP_SOGLIA_MIN = 20;
@@ -20,7 +20,7 @@ void setup() {
   pinMode(LED_ROSSO, OUTPUT);
   
   // Inizializzazione LCD
-  Wire.begin(); // Abilita la comunicazione I2C
+  Wire.begin(); // Permette la comunicazione con l'I2C
   lcd.init();
   lcd.backlight();
   lcd.clear();
@@ -36,7 +36,7 @@ void loop() {
   int result = dht11.readTemperatureHumidity(temp, hum);
   
   if(result == 0) {
-    // Controllo LED
+    // Gestione dei led
     if(temp < TEMP_SOGLIA_MIN) {
       digitalWrite(LED_VERDE, HIGH);
       digitalWrite(LED_ROSSO, LOW);
@@ -50,13 +50,13 @@ void loop() {
       digitalWrite(LED_ROSSO, HIGH);
     }
 
-    // Aggiornamento LCD
+    // Aggiorno i valori sullo schermo
     lcd.setCursor(5, 0);
     lcd.print(String(temp) + "C  ");
     lcd.setCursor(5, 1);
     lcd.print(String(hum) + "%  ");
 
-    // Invio dati seriale
+    // Invio dati alla seriale
     doc["time"] = millis();
     doc["temp"] = temp;
     doc["humidity"] = hum;
@@ -67,7 +67,7 @@ void loop() {
   else {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Errore sensore!");
+    lcd.print("dati illeggibili");
   }
   
   delay(5000);
