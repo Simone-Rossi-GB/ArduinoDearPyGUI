@@ -3,11 +3,14 @@ import json
 import threading
 import time
 import serial
+import signal
+import sys
 from queue import Queue
 
 PORTA_SERIALE = 'COM6'
 VELOCITA_TRASMISSIONE = 9600
-INTERVALLO = 5  # secondi
+INTERVALLO = 5
+FILE_DATI = 'dati_sensori.jsonl'
 TEMPERATURA_SOGLIA_MINIMA = 20
 TEMPERATURA_SOGLIA_MASSIMA = 25
 UMIDITA_SOGLIA_MINIMA = 30
@@ -16,13 +19,47 @@ UMIDITA_SOGLIA_MASSIMA = 60
 tempi = []
 temperature = []
 umidita = []
+file_lock = threading.Lock()
 
 serie_temperatura = None
 serie_umidita = None
 indicatore_temperatura = None
 indicatore_umidita = None
 
+
+def gestisci_terminazione(signum, frame):
+    with file_lock:
+        with open(FILE_DATI, 'a', encoding='utf-8') as f:
+            f.write('\n')
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, gestisci_terminazione)
+signal.signal(signal.SIGTERM, gestisci_terminazione)
+
+
+def inizializza_file():
+    try:
+        with open(FILE_DATI, 'r+', encoding='utf-8') as f:
+            linee = f.readlines()
+            if linee and linee[-1].strip() != '':
+                f.write('\n')
+    except FileNotFoundError:
+        with open(FILE_DATI, 'w', encoding='utf-8') as f:
+            pass
+
+
+def salva_dati(dati):
+    with file_lock:
+        with open(FILE_DATI, 'a', encoding='utf-8') as f:
+            json.dump(dati, f)
+            f.write('\n')
+            f.flush()
+
+
 def lettura_seriale(coda):
+    inizializza_file()
+
     try:
         ser = serial.Serial(PORTA_SERIALE, VELOCITA_TRASMISSIONE, timeout=1)
     except Exception as e:
@@ -36,6 +73,7 @@ def lettura_seriale(coda):
                 try:
                     dati = json.loads(riga)
                     coda.put(dati)
+                    salva_dati(dati)
                 except json.JSONDecodeError:
                     print(f"Dati non validi: {riga}")
         except Exception as e:
@@ -113,16 +151,16 @@ def main():
     coda = Queue()
     dpg.create_context()
 
-    # Thread che legge dalla seriale
+    # Thread che legge i json dalla seriale
     threading.Thread(target=lettura_seriale, args=(coda,), daemon=True).start()
 
-    # creazione GUI
+    # Creazione della interfaccia GUI
     crea_interfaccia()
     dpg.create_viewport(title='Termostato', width=1200, height=800)
     dpg.setup_dearpygui()
     dpg.show_viewport()
 
-    # parte di programma che viene eseguita in loop
+    # Parte di programma in loop che aggiorna i dati
     while dpg.is_dearpygui_running():
         if not coda.empty():
             dati = coda.get()
@@ -132,7 +170,7 @@ def main():
                 tempi.append(tempo_secondi)
                 temperature.append(dati['temp'])
                 umidita.append(dati['humidity'])
-                print(f"Time: {tempo_secondi}s - Temp: {dati['temp']}°C - Umidità: {dati['humidity']}%")
+                print(f"Time: {tempo_secondi:.1f}s - Temp: {dati['temp']}°C - Umidità: {dati['humidity']}%")
 
                 dpg.configure_item(serie_temperatura, x=tempi, y=temperature)
                 dpg.configure_item(serie_umidita, x=tempi, y=umidita)
@@ -143,6 +181,10 @@ def main():
 
         dpg.render_dearpygui_frame()
 
+    # Aggiungi riga vuota ad ogni chiusura in modo tale che ricominci al riavvio dopo di essa
+    with file_lock:
+        with open(FILE_DATI, 'a', encoding='utf-8') as f:
+            f.write('\n')
     dpg.destroy_context()
 
 if __name__ == "__main__":
