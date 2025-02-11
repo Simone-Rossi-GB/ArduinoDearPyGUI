@@ -1,0 +1,74 @@
+#include <DHT11.h>
+#include <ArduinoJson.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+#define DHT_PIN 2
+#define LED_VERDE 3
+#define LED_ROSSO 4
+
+DHT11 dht11(DHT_PIN);
+LiquidCrystal_I2C lcd(0x27, 16, 2); // Modifica l'indirizzo I2C se necessario
+
+// Soglie temperatura
+const int TEMP_SOGLIA_MIN = 20;
+const int TEMP_SOGLIA_MAX = 25;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(LED_VERDE, OUTPUT);
+  pinMode(LED_ROSSO, OUTPUT);
+  
+  // Inizializzazione LCD
+  Wire.begin(); // Abilita la comunicazione I2C
+  lcd.init();
+  lcd.backlight();
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Temp:    Hum:");
+}
+
+void loop() {
+  StaticJsonDocument<200> doc;
+  int temp = 0;
+  int hum = 0;
+
+  int result = dht11.readTemperatureHumidity(temp, hum);
+  
+  if(result == 0) {
+    // Controllo LED
+    if(temp < TEMP_SOGLIA_MIN) {
+      digitalWrite(LED_VERDE, HIGH);
+      digitalWrite(LED_ROSSO, LOW);
+    }
+    else if(temp > TEMP_SOGLIA_MAX) {
+      digitalWrite(LED_VERDE, LOW);
+      digitalWrite(LED_ROSSO, HIGH);
+    }
+    else {
+      digitalWrite(LED_VERDE, HIGH);
+      digitalWrite(LED_ROSSO, HIGH);
+    }
+
+    // Aggiornamento LCD
+    lcd.setCursor(5, 0);
+    lcd.print(String(temp) + "C  ");
+    lcd.setCursor(5, 1);
+    lcd.print(String(hum) + "%  ");
+
+    // Invio dati seriale
+    doc["time"] = millis();
+    doc["temp"] = temp;
+    doc["humidity"] = hum;
+    
+    serializeJson(doc, Serial);
+    Serial.println();
+  }
+  else {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Errore sensore!");
+  }
+  
+  delay(5000);
+}
