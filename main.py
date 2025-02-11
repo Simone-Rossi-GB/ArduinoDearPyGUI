@@ -85,7 +85,7 @@ def lettura_seriale(coda):
 def crea_interfaccia():
     global serie_temperatura, serie_umidita, indicatore_temperatura, indicatore_umidita
 
-    with dpg.window(label="Monitoraggio", width=1200, height=800):
+    with dpg.window(label="Monitoraggio", width=1200, height=750):
         # Grafico Temperatura
         with dpg.plot(label="Temperatura", height=300, width=-1):
             dpg.add_plot_axis(
@@ -123,12 +123,12 @@ def crea_interfaccia():
             with dpg.group():
                 dpg.add_text("Temperatura:")
                 with dpg.drawlist(width=100, height=100):
-                    indicatore_temperatura = dpg.draw_circle((50, 50), 40, color=(255, 255, 0, 255))
+                    indicatore_temperatura = dpg.draw_circle((40, 25), 20, color=(255, 255, 0, 255))
 
             with dpg.group():
                 dpg.add_text("Umidità:")
                 with dpg.drawlist(width=100, height=100):
-                    indicatore_umidita = dpg.draw_circle((50, 50), 40, color=(255, 255, 0, 255))
+                    indicatore_umidita = dpg.draw_circle((25, 25), 20, color=(255, 255, 0, 255))
 
 def aggiorna_indicatori(temperatura_valore, umidita_valore):
     # cerchi indicatori temperatura
@@ -156,7 +156,7 @@ def main():
 
     # Creazione della interfaccia GUI
     crea_interfaccia()
-    dpg.create_viewport(title='Termostato', width=1200, height=800)
+    dpg.create_viewport(title='Termostato', width=1200, height=750)
     dpg.setup_dearpygui()
     dpg.show_viewport()
 
