@@ -5,7 +5,6 @@ import time
 import serial
 from queue import Queue
 
-# Configurazioni
 PORTA_SERIALE = 'COM6'
 VELOCITA_TRASMISSIONE = 9600
 INTERVALLO = 5  # secondi
@@ -14,12 +13,10 @@ TEMPERATURA_SOGLIA_MASSIMA = 25
 UMIDITA_SOGLIA_MINIMA = 30
 UMIDITA_SOGLIA_MASSIMA = 60
 
-# Strutture dati
 tempi = []
 temperature = []
 umidita = []
 
-# Elementi GUI
 serie_temperatura = None
 serie_umidita = None
 indicatore_temperatura = None
@@ -83,7 +80,7 @@ def crea_interfaccia():
             )
             serie_umidita = dpg.add_line_series([], [], parent=asse_y)
 
-        # Indicatori di Stato
+        # Cerchi che indicano lo Stato
         with dpg.group(horizontal=True):
             with dpg.group():
                 dpg.add_text("Temperatura:")
@@ -96,7 +93,7 @@ def crea_interfaccia():
                     indicatore_umidita = dpg.draw_circle((50, 50), 40, color=(255, 255, 0, 255))
 
 def aggiorna_indicatori(temperatura_valore, umidita_valore):
-    # Logica indicatori temperatura
+    # cerchi indicatori temperatura
     if temperatura_valore < TEMPERATURA_SOGLIA_MINIMA:
         dpg.configure_item(indicatore_temperatura, color=(255, 255, 0, 255))
     elif temperatura_valore > TEMPERATURA_SOGLIA_MASSIMA:
@@ -104,7 +101,7 @@ def aggiorna_indicatori(temperatura_valore, umidita_valore):
     else:
         dpg.configure_item(indicatore_temperatura, color=(0, 255, 0, 255))
 
-    # Logica indicatori umidità
+    # cerchi indicatori umidità
     if umidita_valore < UMIDITA_SOGLIA_MINIMA:
         dpg.configure_item(indicatore_umidita, color=(255, 255, 0, 255))
     elif umidita_valore > UMIDITA_SOGLIA_MASSIMA:
@@ -116,16 +113,16 @@ def main():
     coda = Queue()
     dpg.create_context()
 
-    # Thread lettura seriale
+    # Thread che legge dalla seriale
     threading.Thread(target=lettura_seriale, args=(coda,), daemon=True).start()
 
-    # Setup GUI
+    # creazione GUI
     crea_interfaccia()
     dpg.create_viewport(title='Termostato', width=1200, height=800)
     dpg.setup_dearpygui()
     dpg.show_viewport()
 
-    # Loop principale
+    # parte di programma che viene eseguita in loop
     while dpg.is_dearpygui_running():
         if not coda.empty():
             dati = coda.get()
