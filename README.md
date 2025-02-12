@@ -13,6 +13,6 @@ Sono subentrate difficoltà come:
 
 Problemi ancora non risolti: inserimento di intervalli da 5 negli assi x e y della temperatura e un intervallo di 20 all'asse y dell'umidità.
 
-ATTENZIONE: Si informa che sono stati usate IA come DeepSeek e CahtGPT per una coprensione di eccezioni, errori e parti di codice nella documentazione non compresi completamente.
+ATTENZIONE: Si informa che sono stati usate IA come DeepSeek e ChatGPT per una comprensione di eccezioni, errori e parti di codice nella documentazione non compresi completamente.
 
 Gruppo: Rossi Simone, Grassi Francesco e Viola Filippo.
