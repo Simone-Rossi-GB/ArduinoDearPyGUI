@@ -11,7 +11,7 @@ Sono subentrate difficoltà come:
   - informazioni non visualizzate sullo schermo LCD I2C;
   - Ottenimento di un tempo preciso che veniva in ritardo a causa delle tante istruzioni da eseguire. (Il rilevamento e l'aggiornamento non avvengono precisamente ogni 5 secondi).
 
-Problemi ancora non risolti: inserimento di intervalli da 5 nell'asse x del tempo e della temperatura e un intervallo di 20 all'asse y dell'umidità.
+Problemi ancora non risolti: inserimento di intervalli da 5 negli assi x e y della temperatura e un intervallo di 20 all'asse y dell'umidità.
 
 ATTENZIONE: Si informa che sono stati usate IA come DeepSeek e CahtGPT per una coprensione di eccezioni, errori e parti di codice nella documentazione non compresi completamente.
 
