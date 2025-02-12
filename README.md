@@ -1,5 +1,5 @@
 # ArduinoDearPyGUI
-un progetto scolastico a gruppi volto a migliorare le capacità degli studenti nell'apprendimento autonomo tramite datasheet e documentazioni. I codici creati permettono il rilevamento di temperatura e umidità che verranno poi inviati al programma python tramite la seriale e infine mostrati sui grafici in finestra grazie alla libreria DearpyGUI.
+Un progetto scolastico a gruppi volto a migliorare le capacità degli studenti nell'apprendimento autonomo tramite datasheet e documentazioni. I codici creati permettono il rilevamento di temperatura e umidità che verranno poi inviati al programma python tramite la seriale e infine mostrati sui grafici in finestra grazie alla libreria DearpyGUI.
 
 Per il salvataggio dei json è necessario avere nella cartella del progetto un file jsonl. Il codice è stato scritto in modo tale da salvare ogni json ricevuto dalla seriale su ogni riga del file jsonl e in caso di chiusura del programma è previsto l'inserimento di una riga vuota dove il programma inizia a salvare di nuovo (dopo la riga vuota) in caso di riavvio.
 
