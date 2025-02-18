@@ -18,10 +18,6 @@ UMIDITA_SOGLIA_MASSIMA = 60
 
 # Aggiungi queste costanti per i limiti dei grafici
 X_WINDOW_SIZE = 60  # Finestra temporale visibile (secondi)
-TEMPERATURA_Y_MIN = TEMPERATURA_SOGLIA_MINIMA - 5
-TEMPERATURA_Y_MAX = TEMPERATURA_SOGLIA_MASSIMA + 5
-UMIDITA_Y_MIN = UMIDITA_SOGLIA_MINIMA - 10
-UMIDITA_Y_MAX = UMIDITA_SOGLIA_MASSIMA + 10
 
 tempi = []
 temperature = []
@@ -90,54 +86,37 @@ def lettura_seriale(coda):
 def crea_interfaccia():
     global serie_temperatura, serie_umidita, indicatore_temperatura, indicatore_umidita, asse_x_temp, asse_x_hum
 
-    with dpg.window(label="Monitoraggio", width=1200, height=750):
+    with dpg.window(label="Monitoraggio", width=1280, height=750):
         # Grafico Temperatura
-        with dpg.plot(label="Temperatura", height=300, width=-1):
-            asse_x_temp = dpg.add_plot_axis(
-                dpg.mvXAxis,
-                label="Tempo (s)",
-                no_gridlines=False,
-                no_tick_labels=False
-            )
-            asse_y_temp = dpg.add_plot_axis(
-                dpg.mvYAxis,
-                label="°C",
-                no_gridlines=False,
-                no_tick_labels=False
-            )
-            dpg.set_axis_limits(asse_y_temp, 0, 35)
-            dpg.set_axis_limits(asse_x_temp, 0, 15)
-            serie_temperatura = dpg.add_line_series([], [], parent=asse_y_temp)
-
-        # Grafico Umidità
-        with dpg.plot(label="Umidità", height=300, width=-1):
-            asse_x_hum = dpg.add_plot_axis(
-                dpg.mvXAxis,
-                label="Tempo (s)",
-                no_gridlines=False,
-                no_tick_labels=False
-            )
-            asse_y_hum = dpg.add_plot_axis(
-                dpg.mvYAxis,
-                label="%",
-                no_gridlines=False,
-                no_tick_labels=False
-            )
-            dpg.set_axis_limits(asse_y_hum, 0, 100)
-            dpg.set_axis_limits(asse_x_hum, 0, 15)
-            serie_umidita = dpg.add_line_series([], [], parent=asse_y_hum)
-
-        # Cerchi indicatori
+        dpg.add_text("Temperatura: --°C", tag="temp_text")
+        # Layout orizzontale per temperatura
         with dpg.group(horizontal=True):
+            with dpg.plot(label="Temperatura", height=300, width=1170):
+                asse_x_temp = dpg.add_plot_axis(dpg.mvXAxis, label="Tempo (s)")
+                asse_y_temp = dpg.add_plot_axis(dpg.mvYAxis, label="°C")
+                dpg.set_axis_limits(asse_y_temp, 0, 35)
+                dpg.set_axis_limits(asse_x_temp, 0, 15)
+                serie_temperatura = dpg.add_line_series([], [], parent=asse_y_temp)
+
             with dpg.group():
                 dpg.add_text("Temperatura:")
-                with dpg.drawlist(width=100, height=100):
-                    indicatore_temperatura = dpg.draw_circle((40, 25), 20, color=(255, 255, 0, 255))
+                with dpg.drawlist(width=50, height=50):
+                    indicatore_temperatura = dpg.draw_circle((25, 25), 20, fill=(255, 255, 0, 255))
+
+        dpg.add_text("Umidità: --%", tag="hum_text")
+        # Layout orizzontale per umidità
+        with dpg.group(horizontal=True):
+            with dpg.plot(label="Umidità", height=300, width=1170):
+                asse_x_hum = dpg.add_plot_axis(dpg.mvXAxis, label="Tempo (s)")
+                asse_y_hum = dpg.add_plot_axis(dpg.mvYAxis, label="%")
+                dpg.set_axis_limits(asse_y_hum, 0, 100)
+                dpg.set_axis_limits(asse_x_hum, 0, 15)
+                serie_umidita = dpg.add_line_series([], [], parent=asse_y_hum)
 
             with dpg.group():
                 dpg.add_text("Umidità:")
-                with dpg.drawlist(width=100, height=100):
-                    indicatore_umidita = dpg.draw_circle((25, 25), 20, color=(255, 255, 0, 255))
+                with dpg.drawlist(width=50, height=50):
+                    indicatore_umidita = dpg.draw_circle((25, 25), 20, fill=(255, 255, 0, 255))
 
 def aggiorna_indicatori(temperatura_valore, umidita_valore):
     if temperatura_valore < TEMPERATURA_SOGLIA_MINIMA:
@@ -165,7 +144,7 @@ def main():
     threading.Thread(target=lettura_seriale, args=(coda,), daemon=True).start()
 
     crea_interfaccia()
-    dpg.create_viewport(title='Termostato', width=1200, height=750)
+    dpg.create_viewport(title='Termostato', width=1250, height=750)
     dpg.setup_dearpygui()
     dpg.show_viewport()
 
@@ -173,10 +152,12 @@ def main():
         if not coda.empty():
             dati = coda.get()
             try:
-                tempo_secondi = dati['time'] / 1000
+                tempo_secondi = dati['time']
                 tempi.append(tempo_secondi)
                 temperature.append(dati['temp'])
                 umidita.append(dati['humidity'])
+                dpg.set_value("temp_text", f"Temperatura: {dati['temp']}°C")
+                dpg.set_value("hum_text", f"Umidità: {dati['humidity']}%")
                 print(f"Time: {tempo_secondi:.1f}s - Temp: {dati['temp']}°C - Umidità: {dati['humidity']}%")
 
                 # Aggiorna finestra temporale
