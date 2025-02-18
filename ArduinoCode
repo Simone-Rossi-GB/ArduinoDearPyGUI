@@ -4,8 +4,25 @@
 #define DHT_PIN 2
 DHT11 dht11(DHT_PIN);
 
+int LED_ROSSO = 12; //temp
+int LED_VERDE = 11; //temp
+
+int LED_BLU = 10; //hum
+int LED_GIALLO = 9; //hum
+
+//resistenze da minimo 220 Ohm
+
+const int SOGLIA_MIN_TEMP = 20;
+const int SOGLIA_MAX_TEMP = 25;
+const int SOGLIA_MIN_HUM = 30;
+const int SOGLIA_MAX_HUM = 60;
+
 void setup() {
   Serial.begin(9600);
+  pinMode(LED_ROSSO, OUTPUT);
+  pinMode(LED_VERDE, OUTPUT);
+  pinMode(LED_BLU, OUTPUT);
+  pinMode(LED_GIALLO, OUTPUT);
 }
 
 void loop() {
@@ -17,12 +34,34 @@ void loop() {
   int result = dht11.readTemperatureHumidity(temp, hum);
   
   if(result == 0) {
-    doc["time"] = millis();
+
+    if(temp >= SOGLIA_MAX_TEMP) {
+      digitalWrite(LED_ROSSO, HIGH);
+      digitalWrite(LED_VERDE, LOW);
+    } else if (temp > SOGLIA_MIN_TEMP && temp < SOGLIA_MAX_TEMP) {
+      digitalWrite(LED_ROSSO, HIGH);
+      digitalWrite(LED_VERDE, HIGH);
+    } else if (temp <= SOGLIA_MIN_TEMP) {
+      digitalWrite(LED_ROSSO, LOW);
+      digitalWrite(LED_VERDE, HIGH);
+    }
+
+    if(hum > SOGLIA_MAX_HUM) {
+      digitalWrite(LED_BLU, HIGH);
+      digitalWrite(LED_GIALLO, LOW);
+    } else if (hum > SOGLIA_MIN_HUM && temp < SOGLIA_MAX_HUM) {
+      digitalWrite(LED_BLU, HIGH);
+      digitalWrite(LED_GIALLO, HIGH);
+    } else if (hum < SOGLIA_MIN_HUM) {
+      digitalWrite(LED_BLU, LOW);
+      digitalWrite(LED_GIALLO, HIGH);
+    }
+
+    doc["time"] = millis() / 1000;
     doc["temp"] = temp;
     doc["humidity"] = hum;
     
     serializeJson(doc, Serial);
-    Serial.println();
   }
   
   delay(5000);
