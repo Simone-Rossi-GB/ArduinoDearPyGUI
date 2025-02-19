@@ -1,0 +1,103 @@
+#include <DHT11.h>
+#include <ArduinoJson.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define DHT_PIN 2
+int LED_ROSSO = 12; //temp
+int LED_VERDE = 11; //temp
+
+int LED_BLU = 10; //hum
+int LED_GIALLO = 9; //hum
+
+//resistenze da minimo 220 Ohm
+
+const int SOGLIA_MIN_TEMP = 20;
+const int SOGLIA_MAX_TEMP = 25;
+const int SOGLIA_MIN_HUM = 30;
+const int SOGLIA_MAX_HUM = 60;
+
+DHT11 dht11(DHT_PIN);
+
+// Definizioni per l'OLED
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(LED_VERDE, OUTPUT);
+  pinMode(LED_ROSSO, OUTPUT);
+  
+  // Inizializzazione OLED
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Indirizzo I2C 0x3C per l'OLED
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Blocca l'esecuzione se l'inizializzazione fallisce
+  }
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.display();
+}
+
+void loop() {
+  StaticJsonDocument<200> doc;
+  int temp = 0;
+  int hum = 0;
+
+  int result = dht11.readTemperatureHumidity(temp, hum);
+  
+  if(result == 0) {
+    if(temp >= SOGLIA_MAX_TEMP) {
+      digitalWrite(LED_ROSSO, HIGH);
+      digitalWrite(LED_VERDE, LOW);
+    } else if (temp > SOGLIA_MIN_TEMP && temp < SOGLIA_MAX_TEMP) {
+      digitalWrite(LED_ROSSO, HIGH);
+      digitalWrite(LED_VERDE, HIGH);
+    } else if (temp <= SOGLIA_MIN_TEMP) {
+      digitalWrite(LED_ROSSO, LOW);
+      digitalWrite(LED_VERDE, HIGH);
+    }
+
+    if(hum > SOGLIA_MAX_HUM) {
+      digitalWrite(LED_BLU, HIGH);
+      digitalWrite(LED_GIALLO, LOW);
+    } else if (hum > SOGLIA_MIN_HUM && temp < SOGLIA_MAX_HUM) {
+      digitalWrite(LED_BLU, HIGH);
+      digitalWrite(LED_GIALLO, HIGH);
+    } else if (hum < SOGLIA_MIN_HUM) {
+      digitalWrite(LED_BLU, LOW);
+      digitalWrite(LED_GIALLO, HIGH);
+    }
+
+    // Aggiorno i valori sullo schermo OLED
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.print("Temp: ");
+    display.print(temp);
+    display.print("C");
+    display.setCursor(0, 16);
+    display.print("Hum:  ");
+    display.print(hum);
+    display.print("%");
+    display.display();
+
+    // Invio dati alla seriale
+    doc["time"] = millis();
+    doc["temp"] = temp;
+    doc["humidity"] = hum;
+    
+    serializeJson(doc, Serial);
+    Serial.println();
+  } else {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.print("Dati illeggibili");
+    display.display();
+  }
+  
+  delay(5000);
+}
