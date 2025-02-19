@@ -4,15 +4,21 @@
 #include <LiquidCrystal_I2C.h>
 
 #define DHT_PIN 2
-#define LED_VERDE 3
-#define LED_ROSSO 4
+int LED_ROSSO = 12; //temp
+int LED_VERDE = 11; //temp
+
+int LED_BLU = 10; //hum
+int LED_GIALLO = 9; //hum
+
+//resistenze da minimo 220 Ohm
+
+const int SOGLIA_MIN_TEMP = 20;
+const int SOGLIA_MAX_TEMP = 25;
+const int SOGLIA_MIN_HUM = 30;
+const int SOGLIA_MAX_HUM = 60;
 
 DHT11 dht11(DHT_PIN);
 LiquidCrystal_I2C lcd(0x27, 16, 2); //i pin A4 e A5 li ha all'interno ain automatico
-
-// Soglie temperatura
-const int TEMP_SOGLIA_MIN = 20;
-const int TEMP_SOGLIA_MAX = 25;
 
 void setup() {
   Serial.begin(9600);
@@ -37,7 +43,7 @@ void loop() {
   
   if(result == 0) {
     // Gestione dei led
-    if(temp < TEMP_SOGLIA_MIN) {
+    if(temp < TEMP_SOGLIA_MIN_TEMP) {
       digitalWrite(LED_VERDE, HIGH);
       digitalWrite(LED_ROSSO, LOW);
     }
