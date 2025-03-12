@@ -4,11 +4,11 @@
 #define DHT_PIN 2
 DHT11 dht11(DHT_PIN);
 
-int LED_ROSSO = 12; //temp
-int LED_VERDE = 11; //temp
+int LED_ROSSO_TEMP = 12; //temp
+int LED_VERDE_TEMP = 11; //temp
 
-int LED_BLU = 10; //hum
-int LED_GIALLO = 9; //hum
+int LED_ROSSO_HUM = 10; //hum
+int LED_VERDE_HUM = 9; //hum
 
 //resistenze da minimo 220 Ohm
 
@@ -19,10 +19,10 @@ const int SOGLIA_MAX_HUM = 60;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(LED_ROSSO, OUTPUT);
-  pinMode(LED_VERDE, OUTPUT);
-  pinMode(LED_BLU, OUTPUT);
-  pinMode(LED_GIALLO, OUTPUT);
+  pinMode(LED_ROSSO_TEMP, OUTPUT);
+  pinMode(LED_VERDE_TEMP, OUTPUT);
+  pinMode(LED_BLU_HUM, OUTPUT);
+  pinMode(LED_GIALLO_HUM, OUTPUT);
 }
 
 void loop() {
@@ -36,25 +36,25 @@ void loop() {
   if(result == 0) {
 
     if(temp >= SOGLIA_MAX_TEMP) {
-      digitalWrite(LED_ROSSO, HIGH);
-      digitalWrite(LED_VERDE, LOW);
+      digitalWrite(LED_ROSSO_TEMP, HIGH);
+      digitalWrite(LED_VERDE_TEMP, LOW);
     } else if (temp > SOGLIA_MIN_TEMP && temp < SOGLIA_MAX_TEMP) {
-      digitalWrite(LED_ROSSO, HIGH);
-      digitalWrite(LED_VERDE, HIGH);
+      digitalWrite(LED_ROSSO_TEMP, HIGH);
+      digitalWrite(LED_VERDE_TEMP, HIGH);
     } else if (temp <= SOGLIA_MIN_TEMP) {
-      digitalWrite(LED_ROSSO, LOW);
-      digitalWrite(LED_VERDE, HIGH);
+      digitalWrite(LED_ROSSO_TEMP, LOW);
+      digitalWrite(LED_VERDE_TEMP, HIGH);
     }
 
     if(hum > SOGLIA_MAX_HUM) {
-      digitalWrite(LED_BLU, HIGH);
-      digitalWrite(LED_GIALLO, LOW);
+      digitalWrite(LED_ROSSO_HUM, HIGH);
+      digitalWrite(LED_VERDE_HUM, LOW);
     } else if (hum > SOGLIA_MIN_HUM && temp < SOGLIA_MAX_HUM) {
-      digitalWrite(LED_BLU, HIGH);
-      digitalWrite(LED_GIALLO, HIGH);
+      digitalWrite(LED_ROSSO_HUM, HIGH);
+      digitalWrite(LED_VERDE_HUM, HIGH);
     } else if (hum < SOGLIA_MIN_HUM) {
-      digitalWrite(LED_BLU, LOW);
-      digitalWrite(LED_GIALLO, HIGH);
+      digitalWrite(LED_ROSSO_HUM, LOW);
+      digitalWrite(LED_VERDE_HUM, HIGH);
     }
 
     doc["time"] = millis() / 1000;
